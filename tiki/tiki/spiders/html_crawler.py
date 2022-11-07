@@ -1,4 +1,5 @@
 import scrapy
+from ..constants import *
 
 
 class TikiCrawlingSpider(scrapy.Spider):
@@ -11,6 +12,67 @@ class TikiCrawlingSpider(scrapy.Spider):
         (self.keyword, self.sort_type, self.saved_format,
          self.num_products) = self.handle_cli_arguments()
 
+    def start_requests(self):
+        url = "https://tiki.vn"
+        callback = self.parse_category_list
+
+        if self.keyword is not None:
+            url = "https://tiki.vn/search?q={}&sort={}&limit={}".format(
+                self.keyword, self.sort_type, self.num_products)
+            callback = self.parse_product_list
+
+        yield scrapy.Request(url, callback=callback)
+
+    def parse_product_list(self, response):
+        for i in range(self.num_products):
+            product = response.xpath(PRODUCT_ITEM_XPATH.format([i+1]))
+            product_url = "https://tiki.vn" + product.attrib['href']
+            if isinstance(product_url, str):
+                yield scrapy.Request(url=product_url,
+                                     callback=self.parse_product)
+
+    def parse_category_list(self, response):
+        category_names = response.xpath(CATEGORY_NAME_XPATH).getall()
+        category_urls = response.xpath(CATEGORY_URL_XPATH).getall()
+
+        assert self.category not in category_names, "Invalid input category!"
+
+        for name, url in zip(category_names, category_urls):
+            if self.category == name:
+                target_url = url
+                break
+
+        yield scrapy.Request(url=target_url, callback=self.parse_product_list)
+
+    def parse_product(self, response):
+        title = response.xpath(PRODUCT_TITLE_XPATH).get()
+        current_price = response.xpath(PRODUCT_CURRENT_PRICE_XPATH).get()
+        original_price = response.xpath(PRODUCT_ORIGINAL_PRICE_XPATH).get()
+        discount_rate = response.xpath(PRODUCT_DISCOUNT_RATE_XPATH).get()
+        image_urls = response.xpath(PRODUCT_IMAGE_URLS_XPATH).getall()
+        comments = response.xpath(PRODUCT_COMMENTS_XPATH).getall()
+        detail_info = '-'.join(
+            response.xpath(PRODUCT_DETAIL_INFO_XPATH).getall())
+        sub_category = ' '.join(
+            response.xpath(PRODUCT_SUBCATEGORY_XPATH).getall())
+        description = '\n'.join(
+            response.xpath(PRODUCT_DESCRIPTION_XPATH).getall())
+
+        product_detail = {
+            'title': title,
+            'url': response.url,
+            'current_price': current_price,
+            'original_price': original_price,
+            'discount_rate': discount_rate,
+            'sub_category': sub_category,
+            'detail_info': detail_info,
+            'image_urls': image_urls,
+            'comments': comments,
+            'description': description
+        }
+
+        yield product_detail
+
     def handle_cli_arguments(self):
         self.keyword = getattr(self, 'keyword', None)
         self.category = getattr(self, 'category', None)
@@ -22,7 +84,8 @@ class TikiCrawlingSpider(scrapy.Spider):
         assert saved_format not in [
             'json', 'csv'], "Supported format: [`json`, `csv`]"
         assert sort_type not in ['default', 'top_seller',
-                                 'newest', 'asc', 'desc'], "Invalid product sort type!"
+                                 'newest', 'asc', 'desc'], \
+            "Invalid product sort type!"
         assert self.keyword is not None or self.category is not None, \
             "Must input `keyword` argument or `category` argument!"
         assert self.keyword is None or self.category is not None, \
@@ -39,75 +102,3 @@ class TikiCrawlingSpider(scrapy.Spider):
             sort_type = 'price%2C' + sort_type
 
         return (sort_type, saved_format, num_products)
-
-    def start_requests(self):
-        url = "https://tiki.vn"
-        callback = self.parse_category_list
-
-        if self.keyword is not None:
-            url = f"https://tiki.vn/search?q={self.keyword}&sort={self.sort_type}&limit={self.num_products}"
-            callback = self.parse_product_list
-
-        yield scrapy.Request(url, callback=callback)
-
-    def parse_product_list(self, response):
-        for i in range(self.num_products):
-            product = response.xpath(
-                f"//*[@class = 'product-item' and not (@rel='nofollow')][{i+1}]")
-            product_url = "https://tiki.vn" + product.attrib['href']
-            if isinstance(product_url, str):
-                yield scrapy.Request(url=product_url, callback=self.parse_product)
-
-    def parse_category_list(self, response):
-        category_name_container, category_url_container = [], []
-        for category in response.xpath('//*[@class="styles__FooterSubheading-sc-32ws10-5 cNJLWI"]'):
-            category_name = category.xpath(
-                './a/text()'.get())
-            category_url = category.xpath('./a').attrib['href']
-
-            category_url_container.append(category_url)
-            category_name_container.append(category_name)
-
-        assert self.category not in category_name_container, "No category detected!"
-
-        for name, url in zip(category_name_container, category_url_container):
-            if self.category == name:
-                target_url = url
-                break
-
-        yield scrapy.Request(url=target_url, callback=self.parse_product_list)
-
-    def parse_product(self, response):
-        title = response.xpath(
-            "//*[@class='header']//*[@class='title']/text()").get()
-        current_price = response.xpath(
-            "//*[@class='product-price__current-price']/text()").get()
-        original_price = response.xpath(
-            "//*[@class='product-price__list-price']/text()").get()
-        discount_rate = response.xpath(
-            "//*[@class='product-price__discount-rate']/text()").get()
-        image_urls = response.xpath(
-            '//*[@data-view-id="pdp_main_view_photo"]//*[@class="webpimg-container"]/img/@src').getall()
-        comments = response.xpath(
-            '//*[@class="rating-attribute__attributes"]/text()').getall()
-        detail_info = '-'.join(response.xpath(
-            '//*[@class="content has-table"]/table/tbody/tr/td/text()').getall())
-        sub_category = ' '.join(response.xpath(
-            '//*[@class="//*[@class="breadcrumb"]/a/span/text()').getall())
-        description = '\n'.join(response.xpath(
-            '//*[@class="content"]/div/div/p/text()').getall())
-
-        product_detail = {
-            'title': title,
-            'url': response.url,
-            'current_price': current_price,
-            'original_price': original_price,
-            'discount_rate': discount_rate,
-            'sub_category': sub_category,
-            'detail_info': detail_info,
-            'image_urls': image_urls,
-            'comments': comments,
-            'description': description
-        }
-
-        yield product_detail
