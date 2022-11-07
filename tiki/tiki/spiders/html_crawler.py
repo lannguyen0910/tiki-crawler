@@ -4,12 +4,12 @@ from ..constants import *
 
 class TikiCrawlingSpider(scrapy.Spider):
     name = 'html_crawler'
-    allowed_domains = ['www.tiki.vn']
+    start_urls = ['https://www.tiki.vn']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.numerical_order = 0
-        (self.keyword, self.sort_type, self.saved_format,
+        (self.sort_type, self.saved_format,
          self.num_products) = self.handle_cli_arguments()
 
     def start_requests(self):
@@ -25,11 +25,11 @@ class TikiCrawlingSpider(scrapy.Spider):
 
     def parse_product_list(self, response):
         for i in range(self.num_products):
-            product = response.xpath(PRODUCT_ITEM_XPATH.format([i+1]))
+            product = response.xpath(PRODUCT_ITEM_XPATH.format(i+1))
             product_url = "https://tiki.vn" + product.attrib['href']
             if isinstance(product_url, str):
                 yield scrapy.Request(url=product_url,
-                                     callback=self.parse_product)
+                                     callback=self.parse)
 
     def parse_category_list(self, response):
         category_names = response.xpath(CATEGORY_NAME_XPATH).getall()
@@ -44,18 +44,18 @@ class TikiCrawlingSpider(scrapy.Spider):
 
         yield scrapy.Request(url=target_url, callback=self.parse_product_list)
 
-    def parse_product(self, response):
+    def parse(self, response):
         title = response.xpath(PRODUCT_TITLE_XPATH).get()
         current_price = response.xpath(PRODUCT_CURRENT_PRICE_XPATH).get()
         original_price = response.xpath(PRODUCT_ORIGINAL_PRICE_XPATH).get()
         discount_rate = response.xpath(PRODUCT_DISCOUNT_RATE_XPATH).get()
         image_urls = response.xpath(PRODUCT_IMAGE_URLS_XPATH).getall()
         comments = response.xpath(PRODUCT_COMMENTS_XPATH).getall()
-        detail_info = '-'.join(
+        detail_info = ' -> '.join(
             response.xpath(PRODUCT_DETAIL_INFO_XPATH).getall())
-        sub_category = ' '.join(
+        sub_category = '-'.join(
             response.xpath(PRODUCT_SUBCATEGORY_XPATH).getall())
-        description = '\n'.join(
+        description = '-'.join(
             response.xpath(PRODUCT_DESCRIPTION_XPATH).getall())
 
         product_detail = {
@@ -77,18 +77,17 @@ class TikiCrawlingSpider(scrapy.Spider):
         self.keyword = getattr(self, 'keyword', None)
         self.category = getattr(self, 'category', None)
         saved_format = getattr(self, 'saved_format', None)
-        output_path = getattr(self, 'output_path', None)
         sort_type = getattr(self, 'sort_type', None)
-        num_products = getattr(self, 'num_products', None)
+        num_products = int(getattr(self, 'num_products', None))
 
-        assert saved_format not in [
+        assert saved_format in [
             'json', 'csv'], "Supported format: [`json`, `csv`]"
-        assert sort_type not in ['default', 'top_seller',
-                                 'newest', 'asc', 'desc'], \
+        assert sort_type in ['default', 'top_seller',
+                             'newest', 'asc', 'desc'], \
             "Invalid product sort type!"
         assert self.keyword is not None or self.category is not None, \
             "Must input `keyword` argument or `category` argument!"
-        assert self.keyword is None or self.category is not None, \
+        assert self.keyword is None or self.category is None, \
             "Cannot input both `keyword` argument and `category` argument!"
 
         if self.keyword is not None:
@@ -96,8 +95,6 @@ class TikiCrawlingSpider(scrapy.Spider):
 
         if num_products is None:
             num_products = 50
-        if output_path is None:
-            output_path = './data'
         if sort_type == 'desc' or sort_type == 'asc':
             sort_type = 'price%2C' + sort_type
 
