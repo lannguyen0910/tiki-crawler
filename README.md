@@ -2,7 +2,7 @@
 
 
 ## Install dependencies
-Please install [Anaconda](https://docs.anaconda.com/anaconda/install/index.html and reate a new working environment before running the below script.
+Please install [Anaconda](https://docs.anaconda.com/anaconda/install/index.html) and reate a new working environment before running the below script.
 ```
 pip install -r requirements.txt
 cd tiki
