@@ -5,9 +5,15 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
+import scrapy
+from scrapy.pipelines.images import ImagesPipeline
 
 
-class TikiPipeline:
-    def process_item(self, item, spider):
-        return item
+class TikiImagesPipeline(ImagesPipeline):
+    def get_media_requests(self, item, info):
+        for image in item['image_urls']:
+            yield scrapy.Request(image["image_url"], meta={'image_name': image["image_name"],
+                                                           'folder_name': image["folder_name"]})
+
+    def file_path(self, request, response=None, info=None):
+        return f"{request.meta['folder_name']}/{request.meta['image_name']}"

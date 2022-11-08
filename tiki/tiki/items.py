@@ -6,14 +6,15 @@
 import scrapy
 
 
-class TikiItem(scrapy.Item):
+class HTMLCrawlerItem(scrapy.Item):
+    product_number = scrapy.Field()
     title = scrapy.Field()
-    brand = scrapy.Field()
-    rating = scrapy.Field()
-    price = scrapy.Field()
-    colour = scrapy.Field()
-    instock = scrapy.Field()
-    reviews = scrapy.Field()
+    url = scrapy.Field()
+    current_price = scrapy.Field()
+    original_price = scrapy.Field()
+    discount_rate = scrapy.Field()
+    sub_category = scrapy.Field()
+    detail_info = scrapy.Field()
     description = scrapy.Field()
     image_urls = scrapy.Field()
-    images = scrapy.Field()
+    comments = scrapy.Field()
