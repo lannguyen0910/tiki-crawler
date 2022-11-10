@@ -1,7 +1,7 @@
 <h1 align="center">Tiki Crawler with Scrapy</h1>
 
 
-## Install dependencies
+## ⚙️ Install dependencies
 ```
 pip install -r requirements.txt
 cd tiki
@@ -9,33 +9,46 @@ cd tiki
 If you cannot install Scrapy on MacOS, please refer to this [link](https://docs.scrapy.org/en/latest/intro/install.html) for proper guide.
 
 
-## Run Scrapy crawler
+## 👨‍💻 Run Scrapy crawler
 ### Crawl by keyword
 ```python
 scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
                             -s IMAGES_STORE=<image_saved_path> \
-                            -s FEED_EXPORT_INDENT=<indentation_for_json> \
+                            -s FEED_EXPORT_INDENT=<indent_for_json> \
                             -s USER_AGENT=<user_agent> \
-                            -a keyword=<your_keyword> \
+                            -a keyword="<your_keyword>" \
+                            -a parser_type=<>
                             -a sort_type=<product_list_sort_type> \
                             -a num_products=<number_of_product_to_crawl>
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o ./data/data.json -s IMAGES_STORE=./data/images -a keyword="laptop chơi game" -a sort_type=top_seller -a num_products=80
+scrapy crawl tiki_crawler -o ./data/data.json -s IMAGES_STORE=./data/images -a keyword="laptop đời mới" -a sort_type=top_seller -a parser_type=api -a num_products=80
 ```
 ### Crawl by category
 ```python
 scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
                             -s IMAGES_STORE=<image_saved_path> \
-                            -s FEED_EXPORT_INDENT=<indentation_for_json> \
+                            -s FEED_EXPORT_INDENT=<indent_for_json> \
                             -s USER_AGENT=<user_agent> \
-                            -a category=<category_name> \
+                            -a category="<category_name>" \
                             -a sort_type=<product_list_sort_type> \
+                            -a parser_type=<crawl_type>
                             -a num_products=<number_of_product_to_crawl>
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o ./data/data.json -s IMAGES_STORE=./data/images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a num_products=80
+scrapy crawl tiki_crawler -o ./data/data.json -s IMAGES_STORE=./data/images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a parser_type=html -a num_products=80
 ```
-Note: The program only supports categories from ```examples/category_names.txt```.
+### 📝 Note
+The program only supports categories from ```examples/category_names.txt```.
+
+### 📔 Arguments detail
+- ```-o <OUTPUT_FILE>```: We define the output path, filename and format after ```-o``` argument.
+- ```-s IMAGES_STORE```: We specify new output path of downloading images by using this argument.
+- ```-s FEED_EXPORT_INDENT```: Amount of spaces you want to indent for output json file. Ex: ```4```
+- ```-a keyword```: Search products by keywords. Remember to put your keywords in the quotes ```""``` to avoid spacing error.
+- ```-a category```: Search products by categories. Remember this argument and ```keyword``` argument cannot be used at the same time.
+- ```-a sort_type```: Product display in this order. Supported choices: ```popular```, ```top_seller```, ```asc```, ```desc```.
+- ```-a parser_type```: Whether to parser to get product information. Supported choices: ```api```, ```html```.
+- ```-a num_products```: Number of products you want to crawl. 
