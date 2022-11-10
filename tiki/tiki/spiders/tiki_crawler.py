@@ -43,11 +43,13 @@ class TikiCrawlerSpider(scrapy.Spider):
                 target_url = url
                 break
 
+        target_url += f'?sort={self.sort_type}'
         yield scrapy.Request(url=target_url, callback=self.get_product_pages)
 
     def get_product_pages(self, response):
         if not self.stop_paging:
             for page_url in response.xpath(PRODUCT_PAGES_XPATH).getall():
+                print('Page url: ', page_url)
                 yield scrapy.Request(url=page_url,
                                      callback=self.parse_product_lists)
 
@@ -57,6 +59,7 @@ class TikiCrawlerSpider(scrapy.Spider):
                 self.stop_paging = True
                 break
             self.product_counter += 1
+            print('Product url: ', product_url)
 
             if self.parser_type == 'html':
                 product_html_url = TIKI_HOME_URL + product_url

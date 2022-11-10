@@ -39,6 +39,3 @@ Ex:
 scrapy crawl tiki_crawler -o ./data/data.json -s IMAGES_STORE=./data/images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a num_products=80
 ```
 Note: The program only supports categories from ```examples/category_names.txt```.
-
-## Additional Information
-- If you cannot crawl data, go to http://myhttpheader.com/. Copy your "user-agent" and paste it to ```USER_AGENT``` variable in file ```tiki/tiki/settings.py```.

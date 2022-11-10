@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 def get_product_id(tiki_product_url: str) -> str:
-    id = tiki_product_url.split('-')[-1].split('.')[0][1:]
+    id = tiki_product_url.split('.html')[0].split('-')[-1][1:]
     return id
 
 
