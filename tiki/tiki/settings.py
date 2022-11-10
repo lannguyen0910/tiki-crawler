@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = 'tiki.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+USER_AGENT = "Chrome/107.0.0.0 Safari/537.36"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -24,7 +24,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 
 # Amount of spaces used to indent the output on each level
 # Set to 0 for compact representation and faster export
-FEED_EXPORT_INDENT = 4
+FEED_EXPORT_INDENT = 0
 
 # Image stored path
 IMAGES_STORE = './data/imgs'
