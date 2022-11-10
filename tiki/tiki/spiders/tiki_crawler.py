@@ -36,20 +36,22 @@ class TikiCrawlerSpider(scrapy.Spider):
         category_names = response.xpath(CATEGORY_NAME_XPATH).getall()
         category_urls = response.xpath(CATEGORY_URL_XPATH).getall()
         assert self.category in category_names \
-            and self.category not in UNSUPPORTED_CATEGORIES, "Invalid input category!"
+            and self.category not in UNSUPPORTED_CATEGORIES, \
+            "Invalid input category!"
 
         for name, url in zip(category_names, category_urls):
             if self.category == name:
                 target_url = url
                 break
 
+        # This param helps enabling pagination in Tiki categories
         target_url += f'?sort={self.sort_type}'
+
         yield scrapy.Request(url=target_url, callback=self.get_product_pages)
 
     def get_product_pages(self, response):
         if not self.stop_paging:
             for page_url in response.xpath(PRODUCT_PAGES_XPATH).getall():
-                print('Page url: ', page_url)
                 yield scrapy.Request(url=page_url,
                                      callback=self.parse_product_lists)
 
@@ -59,7 +61,6 @@ class TikiCrawlerSpider(scrapy.Spider):
                 self.stop_paging = True
                 break
             self.product_counter += 1
-            print('Product url: ', product_url)
 
             if self.parser_type == 'html':
                 product_html_url = TIKI_HOME_URL + product_url
