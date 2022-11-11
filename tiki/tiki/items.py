@@ -8,6 +8,7 @@ import scrapy
 
 class HTMLCrawlerItem(scrapy.Item):
     product_number = scrapy.Field()
+    id = scrapy.Field()
     title = scrapy.Field()
     url = scrapy.Field()
     current_price = scrapy.Field()
@@ -22,9 +23,10 @@ class HTMLCrawlerItem(scrapy.Item):
 
 class APICrawlerItem(scrapy.Item):
     product_number = scrapy.Field()
-    title = scrapy.Field()  # name
-    url = scrapy.Field()    # short_url
-    description = scrapy.Field()  # short_description
-    price = scrapy.Field()  # price
-    variants = scrapy.Field()  # configurable_products: list of dicts
+    id = scrapy.Field()
+    title = scrapy.Field()
+    url = scrapy.Field()
+    description = scrapy.Field()
+    price = scrapy.Field()
+    variants = scrapy.Field()
     image_urls = scrapy.Field()

@@ -12,7 +12,7 @@ If you cannot install Scrapy on MacOS, please refer to this [link](https://docs.
 ## 👨‍💻 Run Scrapy crawler
 ### Crawl by keyword
 ```python
-scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
+scrapy crawl <spider_name> -o <output_file_path>:<file_format> \
                             -s IMAGES_STORE=<image_saved_path> \
                             -s FEED_EXPORT_INDENT=<indent_for_json> \
                             -s USER_AGENT=<user_agent> \
@@ -23,7 +23,11 @@ scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o ./data/data.json -s IMAGES_STORE=./data/images -a keyword="laptop đời mới" -a sort_type=top_seller -a parser_type=api -a num_products=80
+scrapy crawl tiki_crawler -o data:csv -s IMAGES_STORE=images -a keyword="laptop đời mới" -a sort_type=top_seller -a parser_type=api -a num_products=100
+```
+Or
+```python
+scrapy crawl tiki_crawler -o data1.json -a keyword="iPhone"
 ```
 ### Crawl by category
 ```python
@@ -38,7 +42,11 @@ scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o ./data/data.json -s IMAGES_STORE=./data/images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a parser_type=html -a num_products=80
+scrapy crawl tiki_crawler -o data:json -s IMAGES_STORE=images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a parser_type=html -a num_products=100
+```
+Or
+```python
+scrapy crawl tiki_crawler -o data1.csv -a category="Đồ Chơi - Mẹ & Bé"
 ```
 ### 📝 Note
 The program only supports categories from ```examples/category_names.txt```.
@@ -49,6 +57,6 @@ The program only supports categories from ```examples/category_names.txt```.
 - ```-s FEED_EXPORT_INDENT```: Amount of spaces you want to indent for output json file. Ex: ```4```
 - ```-a keyword```: Search products by keywords. Remember to put your keywords in the quotes ```""``` to avoid spacing error.
 - ```-a category```: Search products by categories. Remember this argument and ```keyword``` argument cannot be used at the same time.
-- ```-a sort_type```: Product display in this order. Supported choices: ```popular```, ```top_seller```, ```asc```, ```desc```.
-- ```-a parser_type```: Whether to parser to get product information. Supported choices: ```api```, ```html```.
+- ```-a sort_type```: Product display in this order. Supported options: ```popular```, ```top_seller```, ```asc```, ```desc```.
+- ```-a parser_type```: Whether to parser to get product information. Supported options: ```api```, ```html```.
 - ```-a num_products```: Number of products you want to crawl. 

@@ -1,8 +1,8 @@
-import scrapy
 import json
+import scrapy
 
 from tiki.items import HTMLCrawlerItem, APICrawlerItem
-from tiki.common.utils import *
+from tiki.utils.getter import get_product_id, get_variant_infos, get_image_urls, get_image_infos
 from tiki.common.constants import *
 
 
@@ -13,7 +13,8 @@ class TikiCrawlerSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.handle_cli_arguments()
-        self.current_page = 1
+        self.number_next_page = 3
+        self.current_page_number = 1
         self.product_number = 0
         self.product_counter = 0
         self.stop_paging = False
@@ -35,8 +36,7 @@ class TikiCrawlerSpider(scrapy.Spider):
     def parse_category_list(self, response):
         category_names = response.xpath(CATEGORY_NAME_XPATH).getall()
         category_urls = response.xpath(CATEGORY_URL_XPATH).getall()
-        assert self.category in category_names \
-            and self.category not in UNSUPPORTED_CATEGORIES, \
+        assert self.category in category_names and self.category not in UNSUPPORTED_CATEGORIES, \
             "Invalid input category!"
 
         for name, url in zip(category_names, category_urls):
@@ -51,9 +51,14 @@ class TikiCrawlerSpider(scrapy.Spider):
 
     def get_product_pages(self, response):
         if not self.stop_paging:
-            for page_url in response.xpath(PRODUCT_PAGES_XPATH).getall():
+            for page_url in range(self.current_page_number, self.current_page_number + self.number_next_page):
+                page_url = response.xpath(
+                    PRODUCT_PAGES_XPATH.format(self.current_page_number)).getall()[0]
+                self.current_page_number += 1
+
                 yield scrapy.Request(url=page_url,
-                                     callback=self.parse_product_lists)
+                                     callback=self.parse_product_lists,
+                                     dont_filter=True)
 
     def parse_product_lists(self, response):
         for product_url in response.xpath(PRODUCT_ITEM_XPATH).getall():
@@ -69,7 +74,6 @@ class TikiCrawlerSpider(scrapy.Spider):
             else:
                 product_id = get_product_id(product_url)
                 product_api_url = PRODUCT_API.format(product_id)
-
                 yield scrapy.Request(url=product_api_url,
                                      callback=self.parse_product_api)
 
@@ -77,6 +81,7 @@ class TikiCrawlerSpider(scrapy.Spider):
         self.product_number += 1
         product_data = json.loads(response.text)
 
+        id = product_data['id']
         title = product_data['name']
         price = product_data['price']
         url = product_data['short_url']
@@ -106,6 +111,7 @@ class TikiCrawlerSpider(scrapy.Spider):
 
         yield APICrawlerItem(
             product_number=self.product_number,
+            id=id,
             title=title,
             price=price,
             url=url,
@@ -117,6 +123,8 @@ class TikiCrawlerSpider(scrapy.Spider):
     def parse_product_html(self, response):
         self.product_number += 1
 
+        url = response.url
+        id = get_product_id(url)
         title = response.xpath(PRODUCT_TITLE_XPATH).get()
         current_price = response.xpath(PRODUCT_CURRENT_PRICE_XPATH).get()
         original_price = response.xpath(PRODUCT_ORIGINAL_PRICE_XPATH).get()
@@ -133,8 +141,9 @@ class TikiCrawlerSpider(scrapy.Spider):
 
         yield HTMLCrawlerItem(
             product_number=self.product_number,
+            id=id,
             title=title,
-            url=response.url,
+            url=url,
             current_price=current_price,
             original_price=original_price,
             discount_rate=discount_rate,
@@ -152,11 +161,10 @@ class TikiCrawlerSpider(scrapy.Spider):
         self.sort_type = getattr(self, 'sort_type', 'popular')
         self.num_products = int(getattr(self, 'num_products', 50))
 
-        assert self.sort_type in ['popular', 'top_seller',
-                                  'newest', 'asc', 'desc'], \
+        assert self.sort_type in ['popular', 'top_seller', 'newest', 'asc', 'desc'], \
             "Invalid product sort type!"
         assert self.parser_type in ['html', 'api'], \
-            "Invalid product parser type"
+            "Invalid product parser type!"
         assert self.keyword is not None or self.category is not None, \
             "Must input `keyword` argument or `category` argument!"
         assert self.keyword is None or self.category is None, \
