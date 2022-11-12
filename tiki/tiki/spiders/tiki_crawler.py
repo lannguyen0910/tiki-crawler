@@ -1,42 +1,42 @@
 import json
 import scrapy
+from scrapy.exceptions import CloseSpider
 
+from tiki.common import constants
 from tiki.items import HTMLCrawlerItem, APICrawlerItem
 from tiki.utils.getter import get_product_id, get_variant_infos, get_image_urls, get_image_infos
-from tiki.common.constants import *
 
 
 class TikiCrawlerSpider(scrapy.Spider):
     name = 'tiki_crawler'
-    start_urls = ['https://www.tiki.vn']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.handle_cli_arguments()
-        self.number_next_page = 3
-        self.current_page_number = 1
+        self.number_next_page = 1
+        self.next_page_number = 2
         self.product_number = 0
         self.product_counter = 0
         self.stop_paging = False
 
     def start_requests(self):
         if self.category is not None:
-            url = TIKI_HOME_URL
+            url = constants.TIKI_HOME_URL
             callback = self.parse_category_list
 
         if self.keyword is not None:
-            url = TIKI_SEARCH_URL.format(
+            url = constants.TIKI_SEARCH_URL.format(
                 self.keyword,
                 self.sort_type
             )
-            callback = self.get_product_pages
+            callback = self.parse_product_lists
 
         yield scrapy.Request(url, callback=callback)
 
     def parse_category_list(self, response):
-        category_names = response.xpath(CATEGORY_NAME_XPATH).getall()
-        category_urls = response.xpath(CATEGORY_URL_XPATH).getall()
-        assert self.category in category_names and self.category not in UNSUPPORTED_CATEGORIES, \
+        category_names = response.xpath(constants.CATEGORY_NAME_XPATH).getall()
+        category_urls = response.xpath(constants.CATEGORY_URL_XPATH).getall()
+        assert self.category in category_names and self.category not in constants.UNSUPPORTED_CATEGORIES, \
             "Invalid input category!"
 
         for name, url in zip(category_names, category_urls):
@@ -44,38 +44,44 @@ class TikiCrawlerSpider(scrapy.Spider):
                 target_url = url
                 break
 
-        # This param helps enabling pagination in Tiki categories
         target_url += f'?sort={self.sort_type}'
 
-        yield scrapy.Request(url=target_url, callback=self.get_product_pages)
-
-    def get_product_pages(self, response):
-        if not self.stop_paging:
-            for page_url in range(self.current_page_number, self.current_page_number + self.number_next_page):
-                page_url = response.xpath(
-                    PRODUCT_PAGES_XPATH.format(self.current_page_number)).getall()[0]
-                self.current_page_number += 1
-
-                yield scrapy.Request(url=page_url,
-                                     callback=self.parse_product_lists,
-                                     dont_filter=True)
+        yield scrapy.Request(url=target_url,
+                             callback=self.parse_product_lists)
 
     def parse_product_lists(self, response):
-        for product_url in response.xpath(PRODUCT_ITEM_XPATH).getall():
+        if response.status == 404:
+            raise CloseSpider('Product pages not found!')
+
+        for product_url in response.xpath(constants.PRODUCT_ITEM_XPATH).getall():
+            assert product_url is not None, "Sorry, no products were found to match your selection!"
             if self.product_counter == self.num_products:
                 self.stop_paging = True
                 break
             self.product_counter += 1
 
             if self.parser_type == 'html':
-                product_html_url = TIKI_HOME_URL + product_url
+                product_html_url = constants.TIKI_HOME_URL + product_url
                 yield scrapy.Request(url=product_html_url,
-                                     callback=self.parse_product_html)
+                                     callback=self.parse_product_html,
+                                     dont_filter=True)
             else:
                 product_id = get_product_id(product_url)
-                product_api_url = PRODUCT_API.format(product_id)
+                product_api_url = constants.PRODUCT_API.format(product_id)
                 yield scrapy.Request(url=product_api_url,
-                                     callback=self.parse_product_api)
+                                     callback=self.parse_product_api,
+                                     dont_filter=True)
+
+        if not self.stop_paging:
+            for page_url in range(self.next_page_number, self.next_page_number + self.number_next_page):
+                page_url = response.xpath(
+                    constants.PRODUCT_PAGES_XPATH.format(self.next_page_number)).getall()[0]
+
+                self.next_page_number += 1
+
+                yield scrapy.Request(url=page_url,
+                                     callback=self.parse_product_lists,
+                                     dont_filter=True)
 
     def parse_product_api(self, response):
         self.product_number += 1
@@ -125,15 +131,22 @@ class TikiCrawlerSpider(scrapy.Spider):
 
         url = response.url
         id = get_product_id(url)
-        title = response.xpath(PRODUCT_TITLE_XPATH).get()
-        current_price = response.xpath(PRODUCT_CURRENT_PRICE_XPATH).get()
-        original_price = response.xpath(PRODUCT_ORIGINAL_PRICE_XPATH).get()
-        discount_rate = response.xpath(PRODUCT_DISCOUNT_RATE_XPATH).get()
-        image_urls = response.xpath(PRODUCT_IMAGE_URLS_XPATH).getall()
-        comments = response.xpath(PRODUCT_COMMENTS_XPATH).getall()
-        description = response.xpath(PRODUCT_DESCRIPTION_XPATH).getall()
-        detail_info = response.xpath(PRODUCT_DETAIL_INFO_XPATH).getall()
-        sub_category = response.xpath(PRODUCT_SUBCATEGORY_XPATH).getall()
+        title = response.xpath(constants.PRODUCT_TITLE_XPATH).get()
+        current_price = response.xpath(
+            constants.PRODUCT_CURRENT_PRICE_XPATH).get()
+        original_price = response.xpath(
+            constants.PRODUCT_ORIGINAL_PRICE_XPATH).get()
+        discount_rate = response.xpath(
+            constants.PRODUCT_DISCOUNT_RATE_XPATH).get()
+        image_urls = response.xpath(
+            constants.PRODUCT_IMAGE_URLS_XPATH).getall()
+        comments = response.xpath(constants.PRODUCT_COMMENTS_XPATH).getall()
+        description = response.xpath(
+            constants.PRODUCT_DESCRIPTION_XPATH).getall()
+        detail_info = response.xpath(
+            constants.PRODUCT_DETAIL_INFO_XPATH).getall()
+        sub_category = response.xpath(
+            constants.PRODUCT_SUBCATEGORY_XPATH).getall()
 
         detail_info = ' - '.join(detail_info)
         sub_category = ' -> '.join(sub_category)

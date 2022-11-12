@@ -27,7 +27,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 FEED_EXPORT_INDENT = 0
 
 # Image stored path
-IMAGES_STORE = './data/imgs'
+IMAGES_STORE = './data/images'
 
 # Only log informational messages
 LOG_LEVEL = 'INFO'
@@ -36,8 +36,8 @@ LOG_LEVEL = 'INFO'
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'tiki.pipelines.TikiImagesPipeline': 1,
-    'tiki.pipelines.DuplicatesPipeline': 300,
-    'tiki.pipelines.JsonWriterPipeline': 500,
+    # 'tiki.pipelines.RemoveDuplicatesPipeline': 300,
+    # 'tiki.pipelines.JsonWriterPipeline': 500,
 }
 
 # Set settings whose default value is deprecated to a future-proof value

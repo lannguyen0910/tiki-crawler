@@ -24,35 +24,3 @@ class TikiImagesPipeline(ImagesPipeline):
 
     def file_path(self, request, response=None, info=None):
         return f"{request.meta['folder_name']}/{request.meta['image_name']}"
-
-    def media_downloaded(self, response, request, info):
-        try:
-            return super(TikiImagesPipeline, self).media_downloaded(response, request, info)
-        except FileException as e:
-            print(e)
-
-
-class DuplicatesPipeline:
-    def __init__(self):
-        self.ids_seen = set()
-
-    def process_item(self, item, spider):
-        adapter = ItemAdapter(item)
-        if adapter['id'] in self.ids_seen:
-            raise DropItem(f"Duplicate item found: {item!r}")
-        else:
-            self.ids_seen.add(adapter['id'])
-            return item
-
-
-class JsonWriterPipeline:
-    def open_spider(self, spider):
-        self.file = open('items.jsonl', 'a', encoding='utf-8')
-
-    def close_spider(self, spider):
-        self.file.close()
-
-    def process_item(self, item, spider):
-        line = json.dumps(ItemAdapter(item).asdict(), ensure_ascii=False) + "\n"
-        self.file.write(line)
-        return item

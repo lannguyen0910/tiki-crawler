@@ -23,11 +23,11 @@ scrapy crawl <spider_name> -o <output_file_path>:<file_format> \
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o data:csv -s IMAGES_STORE=images -a keyword="laptop đời mới" -a sort_type=top_seller -a parser_type=api -a num_products=100
+scrapy crawl tiki_crawler -o data.json -s IMAGES_STORE=images1 -a keyword="laptop" -a sort_type=top_seller -a parser_type=api -a num_products=100
 ```
 Or
 ```python
-scrapy crawl tiki_crawler -o data1.json -a keyword="iPhone"
+scrapy crawl tiki_crawler -o data/data1.json -s IMAGES_STORE=data/images1 -a keyword="iPhone"
 ```
 ### Crawl by category
 ```python
@@ -42,21 +42,21 @@ scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o data:json -s IMAGES_STORE=images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a parser_type=html -a num_products=100
+scrapy crawl tiki_crawler -o data.csv -s IMAGES_STORE=images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a parser_type=html -a num_products=100
 ```
 Or
 ```python
-scrapy crawl tiki_crawler -o data1.csv -a category="Đồ Chơi - Mẹ & Bé"
+scrapy crawl tiki_crawler -o data/data2.csv -s IMAGES_STORE=data/images2 -a category="Đồ Chơi - Mẹ & Bé"
 ```
 ### 📝 Note
 The program only supports categories from ```examples/category_names.txt```.
 
 ### 📔 Arguments detail
 - ```-o <OUTPUT_FILE>```: We define the output path, filename and format after ```-o``` argument.
-- ```-s IMAGES_STORE```: We specify new output path of downloading images by using this argument.
-- ```-s FEED_EXPORT_INDENT```: Amount of spaces you want to indent for output json file. Ex: ```4```
+- ```-s IMAGES_STORE```: We specify new output path of downloading images by using this argument. Default directory: ```data/images```.
+- ```-s FEED_EXPORT_INDENT```: Amount of spaces you want to indent for output json file. Ex: ```4```. Default indent: ```0```.
 - ```-a keyword```: Search products by keywords. Remember to put your keywords in the quotes ```""``` to avoid spacing error.
 - ```-a category```: Search products by categories. Remember this argument and ```keyword``` argument cannot be used at the same time.
-- ```-a sort_type```: Product display in this order. Supported options: ```popular```, ```top_seller```, ```asc```, ```desc```.
-- ```-a parser_type```: Whether to parser to get product information. Supported options: ```api```, ```html```.
-- ```-a num_products```: Number of products you want to crawl. 
+- ```-a sort_type```: Product display in this order. Supported options: ```popular```, ```top_seller```, ```newest```, ```asc```, ```desc```. Default: ```popular```.
+- ```-a parser_type```: Choose which parser to get product information. Supported options: ```api```, ```html```. Default: ```api```.
+- ```-a num_products```: Number of products you want to crawl. Default: ```50```.
