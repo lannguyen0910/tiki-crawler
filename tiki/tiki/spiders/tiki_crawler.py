@@ -4,7 +4,7 @@ from scrapy.exceptions import CloseSpider
 
 from tiki.common import constants
 from tiki.items import HTMLCrawlerItem, APICrawlerItem
-from tiki.utils.getter import get_product_id, get_variant_infos, get_image_urls, get_image_infos
+from tiki.utils.getter import get_category_id, get_product_id, get_variant_infos, get_image_urls, get_image_infos
 
 
 class TikiCrawlerSpider(scrapy.Spider):
@@ -13,7 +13,6 @@ class TikiCrawlerSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.handle_cli_arguments()
-        self.number_next_page = 1
         self.next_page_number = 2
         self.product_number = 0
         self.product_counter = 0
@@ -44,10 +43,22 @@ class TikiCrawlerSpider(scrapy.Spider):
                 target_url = url
                 break
 
-        target_url += f'?sort={self.sort_type}'
+        category_id = get_category_id(target_url)
+        url = constants.CATEGORY_API.format(
+            category_id,
+            self.sort_type,
+            self.num_products
+        )
+        yield scrapy.Request(url=url,
+                             callback=self.parse_category_api)
 
-        yield scrapy.Request(url=target_url,
-                             callback=self.parse_product_lists)
+    def parse_category_api(self, response):
+        category_data = json.loads(response.text)['data']
+        for category in category_data:
+            category_id = category['id']
+            product_url = constants.PRODUCT_API.format(category_id)
+            yield scrapy.Request(url=product_url,
+                                 callback=self.parse_product_api)
 
     def parse_product_lists(self, response):
         if response.status == 404:
@@ -63,25 +74,19 @@ class TikiCrawlerSpider(scrapy.Spider):
             if self.parser_type == 'html':
                 product_html_url = constants.TIKI_HOME_URL + product_url
                 yield scrapy.Request(url=product_html_url,
-                                     callback=self.parse_product_html,
-                                     dont_filter=True)
+                                     callback=self.parse_product_html)
             else:
                 product_id = get_product_id(product_url)
                 product_api_url = constants.PRODUCT_API.format(product_id)
                 yield scrapy.Request(url=product_api_url,
-                                     callback=self.parse_product_api,
-                                     dont_filter=True)
+                                     callback=self.parse_product_api)
 
         if not self.stop_paging:
-            for page_url in range(self.next_page_number, self.next_page_number + self.number_next_page):
-                page_url = response.xpath(
-                    constants.PRODUCT_PAGES_XPATH.format(self.next_page_number)).getall()[0]
-
-                self.next_page_number += 1
-
-                yield scrapy.Request(url=page_url,
-                                     callback=self.parse_product_lists,
-                                     dont_filter=True)
+            page_url = response.xpath(
+                constants.PRODUCT_PAGES_XPATH.format(self.next_page_number)).getall()[0]
+            self.next_page_number += 1
+            yield scrapy.Request(url=page_url,
+                                 callback=self.parse_product_lists)
 
     def parse_product_api(self, response):
         self.product_number += 1
@@ -91,7 +96,6 @@ class TikiCrawlerSpider(scrapy.Spider):
         title = product_data['name']
         price = product_data['price']
         url = product_data['short_url']
-        description = product_data['short_description']
         thumbnail_url = product_data['thumbnail_url']
 
         total_image_urls = []
@@ -121,7 +125,6 @@ class TikiCrawlerSpider(scrapy.Spider):
             title=title,
             price=price,
             url=url,
-            description=description,
             variants=variant_infos,
             image_urls=image_infos
         )
@@ -140,7 +143,6 @@ class TikiCrawlerSpider(scrapy.Spider):
             constants.PRODUCT_DISCOUNT_RATE_XPATH).get()
         image_urls = response.xpath(
             constants.PRODUCT_IMAGE_URLS_XPATH).getall()
-        comments = response.xpath(constants.PRODUCT_COMMENTS_XPATH).getall()
         description = response.xpath(
             constants.PRODUCT_DESCRIPTION_XPATH).getall()
         detail_info = response.xpath(
@@ -163,7 +165,6 @@ class TikiCrawlerSpider(scrapy.Spider):
             sub_category=sub_category,
             detail_info=detail_info,
             description=description,
-            comments=comments,
             image_urls=image_infos,
         )
 

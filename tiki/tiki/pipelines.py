@@ -5,12 +5,10 @@
 
 
 # useful for handling different item types with a single interface
-import json
 import scrapy
 
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
-from scrapy.pipelines.files import FileException
 from scrapy.pipelines.images import ImagesPipeline
 
 
@@ -22,5 +20,29 @@ class TikiImagesPipeline(ImagesPipeline):
                                  meta={'image_name': image["image_name"],
                                        'folder_name': folder_name})
 
-    def file_path(self, request, response=None, info=None):
+    def file_path(self, request, response=None, info=None, *, item=None):
         return f"{request.meta['folder_name']}/{request.meta['image_name']}"
+
+    def item_completed(self, results, item, info):
+        image_paths = [x['path'] for ok, x in results if ok]
+        if not image_paths:
+            raise DropItem("Item contains no images")
+
+        adapter = ItemAdapter(item)
+        adapter['images'] = image_paths
+        del adapter['image_urls']
+
+        return item
+
+
+class RemoveDuplicatesPipeline:
+    def __init__(self):
+        self.ids_seen = set()
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+        if adapter['id'] in self.ids_seen:
+            raise DropItem(f"Duplicate item found: {item!r}")
+        else:
+            self.ids_seen.add(adapter['id'])
+            return item

@@ -1,7 +1,10 @@
 from pathlib import Path
 
+def get_category_id(tiki_category_url):
+    id = tiki_category_url.split('/')[-1][1:]
+    return id
 
-def get_product_id(tiki_product_url: str) -> str:
+def get_product_id(tiki_product_url):
     id = tiki_product_url.split('.html')[0].split('-')[-1][1:]
     return id
 

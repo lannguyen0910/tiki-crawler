@@ -18,7 +18,7 @@ class HTMLCrawlerItem(scrapy.Item):
     detail_info = scrapy.Field()
     description = scrapy.Field()
     image_urls = scrapy.Field()
-    comments = scrapy.Field()
+    images = scrapy.Field()
 
 
 class APICrawlerItem(scrapy.Item):
@@ -26,7 +26,7 @@ class APICrawlerItem(scrapy.Item):
     id = scrapy.Field()
     title = scrapy.Field()
     url = scrapy.Field()
-    description = scrapy.Field()
     price = scrapy.Field()
     variants = scrapy.Field()
     image_urls = scrapy.Field()
+    images = scrapy.Field()

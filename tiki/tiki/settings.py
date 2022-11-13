@@ -35,9 +35,8 @@ LOG_LEVEL = 'INFO'
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'tiki.pipelines.TikiImagesPipeline': 1,
-    # 'tiki.pipelines.RemoveDuplicatesPipeline': 300,
-    # 'tiki.pipelines.JsonWriterPipeline': 500,
+    'tiki.pipelines.RemoveDuplicatesPipeline': 1,
+    'tiki.pipelines.TikiImagesPipeline': 2,
 }
 
 # Set settings whose default value is deprecated to a future-proof value
