@@ -65,7 +65,6 @@ class TikiCrawlerSpider(scrapy.Spider):
             raise CloseSpider('Product pages not found!')
 
         for product_url in response.xpath(constants.PRODUCT_ITEM_XPATH).getall():
-            assert product_url is not None, "Sorry, no products were found to match your selection!"
             if self.product_counter == self.num_products:
                 self.stop_paging = True
                 break
@@ -82,10 +81,12 @@ class TikiCrawlerSpider(scrapy.Spider):
                                      callback=self.parse_product_api)
 
         if not self.stop_paging:
-            page_url = response.xpath(
-                constants.PRODUCT_PAGES_XPATH.format(self.next_page_number)).getall()[0]
+            next_page_urls = response.xpath(
+                constants.PRODUCT_PAGES_XPATH.format(self.next_page_number)).getall()
+            assert len(next_page_urls) != 0, "Sorry, product pages not found!"
+            
             self.next_page_number += 1
-            yield scrapy.Request(url=page_url,
+            yield scrapy.Request(url=next_page_urls[0],
                                  callback=self.parse_product_lists)
 
     def parse_product_api(self, response):
