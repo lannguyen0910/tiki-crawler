@@ -52,6 +52,7 @@ scrapy crawl tiki_crawler -o data/data2.json -s IMAGES_STORE=data/images2 -a cat
 
 ## Additional Information
 To understand what I've done in this project. Please refer to my notes below:
-- Crawling by keyword: [keyword](keyword.md)
-- Crawling by category: [category](category.md)
-- Comparision between parsing data on HTML and parsing using API: [comparision](comparision.md)
+- Scrapy at a glance: [scrapy](docs/scrapy.md).
+- Crawling by keyword: [keyword](docs/keyword.md).
+- Crawling by category: [category](docs/category.md).
+- Personal experience and comparison: [comparision](docs/comparison.md).
