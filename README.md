@@ -22,10 +22,6 @@ scrapy crawl <spider_name> -o <output_file_path>:<file_format> \
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o data.json -s IMAGES_STORE=images1 -s FEED_EXPORT_INDENT=4 -a keyword="laptop" -a sort_type=top_seller -a parser_type=api -a num_products=100
-```
-Or
-```python
 scrapy crawl tiki_crawler -o data/data1.csv -s IMAGES_STORE=data/images1 -a keyword="iPhone"
 ```
 ### Crawl by category
@@ -38,10 +34,6 @@ scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
                             -a num_products=<number_of_product_to_crawl>
 ```
 Ex:
-```python
-scrapy crawl tiki_crawler -o data.json -s IMAGES_STORE=images -a category="Đồ Chơi - Mẹ & Bé" -a sort_type=top_seller -a num_products=100
-```
-Or
 ```python
 scrapy crawl tiki_crawler -o data/data2.json -s IMAGES_STORE=data/images2 -a category="Thiết Bị Số - Phụ Kiện Số"
 ```
@@ -59,4 +51,7 @@ scrapy crawl tiki_crawler -o data/data2.json -s IMAGES_STORE=data/images2 -a cat
 - ```-a num_products```: Number of products you want to crawl. Default: ```50```.
 
 ## Additional Information
-More 
+To understand what I've done in this project. Please refer to my notes below:
+- Crawling by keyword: [keyword](keyword.md)
+- Crawling by category: [category](category.md)
+- Comparision between parsing data on HTML and parsing using API: [comparision](comparision.md)
