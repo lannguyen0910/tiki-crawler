@@ -24,7 +24,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 
 # Amount of spaces used to indent the output on each level
 # Set to 0 for compact representation and faster export
-FEED_EXPORT_INDENT = 0
+FEED_EXPORT_INDENT = 4
 
 # Image stored path
 IMAGES_STORE = './data/images'

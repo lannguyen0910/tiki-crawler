@@ -45,7 +45,7 @@ scrapy crawl tiki_crawler -o data/data.json -s IMAGES_STORE=data/images -a categ
 ### 📔 Arguments detail
 - ```-o <OUTPUT_FILE>```: We define the output path, filename and format after ```-o``` argument. This argument must always be input when running a new script.
 - ```-s IMAGES_STORE```: We specify new output path of downloading images by using this argument. Default directory: ```data/images```.
-- ```-s FEED_EXPORT_INDENT```: Amount of spaces you want to indent for output json file. Default indent: ```0```. For pretty output, set this argument to ```4```.
+- ```-s FEED_EXPORT_INDENT```: Amount of spaces you want to indent for output json file. Default indent: ```4```. For lighter output file, set this argument to ```0```.
 - ```-a keyword```: Search products by keywords. Remember to put your keywords in the quotes ```""``` to avoid spacing error.
 - ```-a category```: Search products by categories. Remember this argument and ```keyword``` argument cannot be used at the same time.
 - ```-a sort_type```: Product display in this order. Supported options: ```popular```, ```top_seller```, ```newest```, ```asc```, ```desc```. Default: ```popular```.
