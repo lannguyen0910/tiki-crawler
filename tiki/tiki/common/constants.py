@@ -16,3 +16,23 @@ TIKI_SEARCH_URL = "https://tiki.vn/search?q={}&sort={}"
 UNSUPPORTED_CATEGORIES = ["Thực Phẩm Tươi Sống"]
 CATEGORY_API = "https://tiki.vn/api/v2/products?category={}&sort={}&limit={}"
 PRODUCT_API = "https://tiki.vn/api/v2/products/{}"
+
+NEW_CATEGORY_NAME_XPATH = "//*[@class='styles__StyledCategory-sc-17y817k-1 iBByno']/p/a/text()"
+NEW_CATEGORY_URL_XPATH = "//*[@class='styles__StyledCategory-sc-17y817k-1 iBByno']/p/a/@href"
+UNSUPPORTED_SUBCATEGORIES = ["Trái Cây",
+                             "Thịt, Trứng",
+                             "Cá, thuỷ hải sản",
+                             "Rau củ quả",
+                             "Thực phẩm Việt",
+                             "Sữa, bơ, phô mai",
+                             "Đông lạnh, mát",
+                             "Dầu ăn, gia vị",
+                             "Gạo, mì, nông sản",
+                             "Đồ hộp, đóng gói",
+                             "Bia, đồ uống",
+                             "Thực phẩm chay",
+                             "Dành cho trẻ em",
+                             "Bánh kẹo, giỏ quà",
+                             "Thức ăn, đồ thú cưng",
+                             "Chăm sóc cá nhân",
+                             "Chăm sóc nhà cửa"]

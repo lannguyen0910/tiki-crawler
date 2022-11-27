@@ -35,12 +35,24 @@ class TikiCrawlerSpider(scrapy.Spider):
     def parse_category_list(self, response):
         category_names = response.xpath(constants.CATEGORY_NAME_XPATH).getall()
         category_urls = response.xpath(constants.CATEGORY_URL_XPATH).getall()
+
+        subcategory_names = response.xpath(
+            constants.SUBCATEGORY_NAME_XPATH).getall()
+        subcategory_urls = response.xpath(
+            constants.SUBCATEGORY_URL_XPATH).getall()
+
         assert self.category in category_names and self.category not in constants.UNSUPPORTED_CATEGORIES, \
             "Invalid input category!"
 
-        for name, url in zip(category_names, category_urls):
+        assert self.category in subcategory_names and self.category not in constants.UNSUPPORTED_SUBCATEGORIES, \
+            "Invalid input subcategory!"
+
+        for name, sub_name, url, sub_url in zip(category_names, subcategory_names, category_urls, subcategory_urls):
             if self.category == name:
                 target_url = url
+                break
+            if self.category == sub_name:
+                target_url = sub_url
                 break
 
         category_id = get_category_id(target_url)
@@ -84,7 +96,7 @@ class TikiCrawlerSpider(scrapy.Spider):
             next_page_urls = response.xpath(
                 constants.PRODUCT_PAGES_XPATH.format(self.next_page_number)).getall()
             assert len(next_page_urls) != 0, "Sorry, product pages not found!"
-            
+
             self.next_page_number += 1
             yield scrapy.Request(url=next_page_urls[0],
                                  callback=self.parse_product_lists)

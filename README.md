@@ -22,7 +22,7 @@ scrapy crawl <spider_name> -o <output_file_path>:<file_format> \
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o data/data1.csv -s IMAGES_STORE=data/images1 -a keyword="iPhone"
+scrapy crawl tiki_crawler -o data/data.csv -s IMAGES_STORE=data/images -a keyword="iPhone"
 ```
 ### Crawl by category
 ```python
@@ -30,15 +30,17 @@ scrapy crawl <spider_name> -o <output_file_path>.<file_format> \
                             -s IMAGES_STORE=<image_saved_path> \
                             -a category="<category_name>" \
                             -a sort_type=<product_list_sort_type> \
-                            -a parser_type=<crawl_type>
                             -a num_products=<number_of_product_to_crawl>
 ```
 Ex:
 ```python
-scrapy crawl tiki_crawler -o data/data2.json -s IMAGES_STORE=data/images2 -a category="Thiết Bị Số - Phụ Kiện Số"
+scrapy crawl tiki_crawler -o data/data.json -s IMAGES_STORE=data/images -a category="Điện thoại Smartphone"
 ```
 ### 📝 Note
-- The program can only support categories from ```examples/category_names.txt```.
+- Only support categories from [categories](examples/category_names.txt) and [subcategories](examples/subcategory_names.txt).
+- Supported output file format: ```csv```, ```json```, ```jsonl```, ```pickle```, ```xml```, ```marshal```. Refer [here](https://docs.scrapy.org/en/latest/topics/feed-exports.html) for more information.
+
+![](examples/categories.PNG)
 
 ### 📔 Arguments detail
 - ```-o <OUTPUT_FILE>```: We define the output path, filename and format after ```-o``` argument. This argument must always be input when running a new script.
@@ -47,7 +49,7 @@ scrapy crawl tiki_crawler -o data/data2.json -s IMAGES_STORE=data/images2 -a cat
 - ```-a keyword```: Search products by keywords. Remember to put your keywords in the quotes ```""``` to avoid spacing error.
 - ```-a category```: Search products by categories. Remember this argument and ```keyword``` argument cannot be used at the same time.
 - ```-a sort_type```: Product display in this order. Supported options: ```popular```, ```top_seller```, ```newest```, ```asc```, ```desc```. Default: ```popular```.
-- ```-a parser_type```: Choose which parser to get product information. Supported options: ```api```, ```html```. Default: ```api```. Work only for ```keyword```
+- ```-a parser_type```: Choose which parser to get product information. Supported options: ```api```, ```html```. Default: ```api```. Work only for ```keyword```.
 - ```-a num_products```: Number of products you want to crawl. Default: ```50```.
 
 ## Additional Information
