@@ -37,7 +37,7 @@ Ex:
 scrapy crawl tiki_crawler -o data/data.json -s IMAGES_STORE=data/images -a category="Điện thoại Smartphone"
 ```
 ### 📝 Note
-- Only support categories from [categories](examples/category_names.txt) and [subcategories](examples/subcategory_names.txt).
+- Only support sub-categories from  and [subcategories](examples/subcategory_names.txt).
 - Supported output file format: ```csv```, ```json```, ```jsonl```, ```pickle```, ```xml```, ```marshal```. Refer [here](https://docs.scrapy.org/en/latest/topics/feed-exports.html) for more information.
 
 ![](examples/categories.PNG)

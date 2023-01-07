@@ -33,24 +33,15 @@ class TikiCrawlerSpider(scrapy.Spider):
         yield scrapy.Request(url, callback=callback)
 
     def parse_category_list(self, response):
-        category_names = response.xpath(constants.CATEGORY_NAME_XPATH).getall()
-        category_urls = response.xpath(constants.CATEGORY_URL_XPATH).getall()
-
         subcategory_names = response.xpath(
-            constants.SUBCATEGORY_NAME_XPATH).getall()
+            constants.NEW_CATEGORY_NAME_XPATH).getall()
         subcategory_urls = response.xpath(
-            constants.SUBCATEGORY_URL_XPATH).getall()
-
-        assert self.category in category_names and self.category not in constants.UNSUPPORTED_CATEGORIES, \
-            "Invalid input category!"
+            constants.NEW_CATEGORY_URL_XPATH).getall()
 
         assert self.category in subcategory_names and self.category not in constants.UNSUPPORTED_SUBCATEGORIES, \
             "Invalid input subcategory!"
 
-        for name, sub_name, url, sub_url in zip(category_names, subcategory_names, category_urls, subcategory_urls):
-            if self.category == name:
-                target_url = url
-                break
+        for sub_name, sub_url in zip(subcategory_names, subcategory_urls):
             if self.category == sub_name:
                 target_url = sub_url
                 break
